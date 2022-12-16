@@ -15,13 +15,15 @@
 #ifndef SIMPLEJ1939_HPP
 #define SIMPLEJ1939_HPP
 
-class MCP_CAN;
+#include <can_common.h>
+
+class CANRaw;
 
 class SimpleJ1939
 {
   public:
-    SimpleJ1939(MCP_CAN * pCAN): pCAN(pCAN) {}
-    MCP_CAN * pCAN;
+    SimpleJ1939(CANRaw * pCAN): pCAN(pCAN) {}
+    CANRaw * pCAN;
     /* Transmit a J1939 Message */
     byte Transmit(long lPGN, byte nPriority, byte nSrcAddr, byte nDestAddr, byte* nData, int nDataLen);
     /* Receive a J1939 Message */
@@ -36,7 +38,8 @@ class SimpleJ1939
       unsigned char pData[8];
       uint8_t nDataLen;
     };
-    CANMsg CANMsgBuffer[CANMSGBUFFERSIZE];
+    //CANMsg CANMsgBuffer[CANMSGBUFFERSIZE];
+    CAN_FRAME CANMsgBuffer[CANMSGBUFFERSIZE];
     byte canTransmit(long lID, unsigned char* pData, int nDataLen);
     byte canReceive(long* lID, unsigned char* pData, int* nDataLen);
     static bool PeerToPeer(long lPGN);

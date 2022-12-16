@@ -12,7 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with SimpleJ1939.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include <mcp_can.h>
+#include <due_can.h>
 #include "SimpleJ1939.hpp"
 
 // ------------------------------------------------------------------------
@@ -20,14 +20,14 @@
 // ------------------------------------------------------------------------
 byte SimpleJ1939::canTransmit(long lID, unsigned char* pData, int nDataLen)
 {
-  if (pCAN->sendMsgBuf(lID, CAN_EXTID, nDataLen, pData) == 0)
-  {
-    return 0;
+  CAN_FRAME outgoing;
+  outgoing.id = lID;
+	outgoing.extended = true;	
+  outgoing.length = (uint8_t)nDataLen;
+	for (int i = 0; i < nDataLen; i++) {
+    outgoing.data.uint8[i] = pData[i];
   }
-  else
-  {
-    return 1;
-  }
+	Can0.sendFrame(outgoing);
 }
 
 // ------------------------------------------------------------------------
@@ -39,13 +39,11 @@ byte SimpleJ1939::canReceive(long* lID, unsigned char* pData, int* nDataLen)
   byte nCnt;
 
   // In case there is a message, put it into the buffer
-  while (pCAN->checkReceive() == CAN_MSGAVAIL)
+  while (pCAN->available() > 0)
   {
     // Read the message buffer
 
-    pCAN->readMsgBuf(&CANMsgBuffer[nWritePointer].lID,
-                     &CANMsgBuffer[nWritePointer].nDataLen,
-                     &CANMsgBuffer[nWritePointer].pData[0]);
+    pCAN->read(CANMsgBuffer[nWritePointer]);
 
     if (++nWritePointer == CANMSGBUFFERSIZE)
     {
@@ -58,12 +56,12 @@ byte SimpleJ1939::canReceive(long* lID, unsigned char* pData, int* nDataLen)
   if (nReadPointer != nWritePointer)
   {
     // Read the next message buffer entry
-    *nDataLen = CANMsgBuffer[nReadPointer].nDataLen;
-    *lID = CANMsgBuffer[nReadPointer].lID;
+    *nDataLen = CANMsgBuffer[nReadPointer].length;
+    *lID = CANMsgBuffer[nReadPointer].id;
 
     for (int nIdx = 0; nIdx < *nDataLen; nIdx++)
     {
-      pData[nIdx] = CANMsgBuffer[nReadPointer].pData[nIdx];
+      pData[nIdx] = CANMsgBuffer[nReadPointer].data.uint8[nIdx];
     }
 
     if (++nReadPointer == CANMSGBUFFERSIZE)
