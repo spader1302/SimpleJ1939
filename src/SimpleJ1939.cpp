@@ -27,7 +27,7 @@ byte SimpleJ1939::canTransmit(long lID, unsigned char* pData, int nDataLen)
 	for (int i = 0; i < nDataLen; i++) {
     outgoing.data.uint8[i] = pData[i];
   }
-	Can0.sendFrame(outgoing);
+	return Can0.sendFrame(outgoing);
 }
 
 // ------------------------------------------------------------------------
